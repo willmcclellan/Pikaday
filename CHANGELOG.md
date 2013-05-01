@@ -2,6 +2,8 @@
 
 ## 1.2.0 - TBA
 
+- Add position option
+
 ## 1.1.0 - 2013-03-29
 
 - Add Ruby on Rails [gem](https://rubygems.org/gems/pikaday-gem)

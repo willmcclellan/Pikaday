@@ -161,6 +161,10 @@
         // automatically show/hide the picker on `field` focus (default `true` if `field` is set)
         bound: undefined,
 
+        // position of the datepicker, relative to the field (default to bottom & left)
+        // ('bottom' & 'left' keywords are not used, 'top' & 'right' are modifier on the bottom/left position)
+        position: 'bottom left',
+
         // the default output format for `.toString()` and `field` value
         format: 'YYYY-MM-DD',
 
@@ -712,12 +716,26 @@
             if (opts.bound) {
                 var pEl  = opts.field,
                     left = pEl.offsetLeft,
-                    top  = pEl.offsetTop + pEl.offsetHeight;
+                    top  = pEl.offsetTop + fieldHeight;
+
+                // default position is bottom & left
+                if (opts.position.indexOf('top') > -1) {
+                    top -= this.el.offsetHeight + pEl.offsetHeight;
+                }
+                if (opts.position.indexOf('right') > -1) {
+                    left -= this.el.offsetWidth - pEl.offsetWidth;
+                }
+
                 while((pEl = pEl.offsetParent)) {
                     left += pEl.offsetLeft;
                     top  += pEl.offsetTop;
                 }
-                this.el.style.cssText = 'position:absolute;left:' + left + 'px;top:' + top + 'px;';
+
+                this.el.style.cssText = [
+                    'position:absolute',
+                    'left:' + left + 'px',
+                    'top:' + top + 'px'
+                ].join(';');
                 sto(function() {
                     opts.field.focus();
                 }, 1);

@@ -76,6 +76,7 @@ Pikaday has many useful options:
 
 * `field` bind the datepicker to a form field
 * `bound` automatically show/hide the datepicker on `field` focus (default `true` if `field` is set)
+* `position` position of the datepicker, relative to the field (default to bottom/left). 'bottom' and 'left' keywords are not used: 'top' and 'right' are modifier on the bottom/left position. You can use them as you want. Eg: 'top right', 'right', 'top-right', 'rightop'...
 * `format` the default output format for `.toString()` and `field` value (requires [Moment.js][moment] for advanced formatting)
 * `defaultDate` the initial date to view when first opened
 * `setDefaultDate` make the `defaultDate` the initial selected value
