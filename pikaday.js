@@ -716,7 +716,7 @@
             if (opts.bound) {
                 var pEl  = opts.field,
                     left = pEl.offsetLeft,
-                    top  = pEl.offsetTop + fieldHeight;
+                    top  = pEl.offsetTop + pEl.offsetHeight;
 
                 // default position is bottom & left
                 if (opts.position.indexOf('top') > -1) {
