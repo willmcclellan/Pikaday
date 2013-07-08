@@ -148,8 +148,20 @@
         }
         return to;
     },
-
-
+    
+    adjustCalendar = function(calendar) {
+        if (calendar.month < 0) {
+            calendar.year -= Math.ceil(Math.abs(calendar.month)/12);
+            calendar.month += 12;
+        }
+        if (calendar.month >= 12) {
+            calendar.year += Math.ceil(Math.abs(calendar.month)/12);
+            calendar.month -= 12;
+        }
+        return calendar;
+    },
+    
+    
     /**
      * defaults and localisation
      */
@@ -221,7 +233,7 @@
         return abbr ? opts.i18n.weekdaysShort[day] : opts.i18n.weekdays[day];
     },
 
-    renderDay = function(i, isSelected, isToday, isDisabled, isEmpty)
+    renderDay = function(d, m, y, isSelected, isToday, isDisabled, isEmpty)
     {
         if (isEmpty) {
             return '<td class="is-empty"></td>';
@@ -236,7 +248,12 @@
         if (isSelected) {
             arr.push('is-selected');
         }
-        return '<td data-day="' + i + '" class="' + arr.join(' ') + '"><button class="pika-button" type="button">' + i + '</button>' + '</td>';
+        return '<td data-day="' + d + '" class="' + arr.join(' ') + '">' +
+                '<button class="pika-button pika-day" type="button" ' +
+                    'data-pika-year="' + y + '" data-pika-month="' + m + '" data-pika-day="' + d + '">' +
+                        d +
+                '</button>' +
+                '</td>';
     },
 
     renderRow = function(days, isRTL)
@@ -258,18 +275,16 @@
         return '<thead>' + (opts.isRTL ? arr.reverse() : arr).join('') + '</thead>';
     },
 
-    renderTitle = function(instance)
+    renderTitle = function(instance, c, year, month)
     {
         var i, j, arr,
             opts = instance._o,
-            month = instance._m,
-            year  = instance._y,
             isMinYear = year === opts.minYear,
             isMaxYear = year === opts.maxYear,
             html = '<div class="pika-title">',
             prev = true,
             next = true;
-
+        
         for (arr = [], i = 0; i < 12; i++) {
             arr.push('<option value="' + i + '"' +
                 (i === month ? ' selected': '') +
@@ -301,8 +316,12 @@
             next = false;
         }
 
-        html += '<button class="pika-prev' + (prev ? '' : ' is-disabled') + '" type="button">' + opts.i18n.previousMonth + '</button>';
-        html += '<button class="pika-next' + (next ? '' : ' is-disabled') + '" type="button">' + opts.i18n.nextMonth + '</button>';
+        if (c === 1) {
+            html += '<button class="pika-prev' + (prev ? '' : ' is-disabled') + '" type="button">' + opts.i18n.previousMonth + '</button>';
+        }
+        if (c === instance._o.numberOfMonths) {
+            html += '<button class="pika-next' + (next ? '' : ' is-disabled') + '" type="button">' + opts.i18n.nextMonth + '</button>';
+        }
 
         return html += '</div>';
     },
@@ -334,7 +353,7 @@
 
             if (!hasClass(target, 'is-disabled')) {
                 if (hasClass(target, 'pika-button') && !hasClass(target, 'is-empty')) {
-                    self.setDate(new Date(self._y, self._m, parseInt(target.innerHTML, 10)));
+                    self.setDate(new Date(target.getAttribute('data-pika-year'), target.getAttribute('data-pika-month'), target.getAttribute('data-pika-day')));
                     if (opts.bound) {
                         sto(function() {
                             self.hide();
@@ -653,19 +672,17 @@
 
         nextMonth: function()
         {
-            if (++this._m > 11) {
-                this._m = 0;
-                this._y++;
-            }
+            this.firstCalendar.month++;
+            this.firstCalendar = adjustCalendar(this.firstCalendar);
             this.draw();
+            
+            return this;
         },
 
         prevMonth: function()
         {
-            if (--this._m < 0) {
-                this._m = 11;
-                this._y--;
-            }
+            this.firstCalendar.month--;
+            this.firstCalendar = adjustCalendar(this.firstCalendar);
             this.draw();
         },
 
@@ -708,7 +725,9 @@
                 minYear = opts.minYear,
                 maxYear = opts.maxYear,
                 minMonth = opts.minMonth,
-                maxMonth = opts.maxMonth;
+                maxMonth = opts.maxMonth,
+                html = '',
+                calendar;
 
             if (this._y <= minYear) {
                 this._y = minYear;
@@ -722,8 +741,29 @@
                     this._m = maxMonth;
                 }
             }
-
-            this.el.innerHTML = renderTitle(this) + this.render(this._y, this._m);
+            
+            if (!this.firstCalendar) {
+                this.firstCalendar = adjustCalendar({
+                    year: this._y,
+                    month: this._m - opts.numberOfMonths + 1
+                });
+            }
+            else {
+                // @todo check & eventually update firstCalendar if ._y-._m-._d will not be visible in the calendars.
+                // and depending on the < or > of the dates, place dates on the left or on the right of all calendars :)
+                // maybe this can be added & enabled as an option
+            }
+            calendar = {
+                year: this.firstCalendar.year,
+                month: this.firstCalendar.month
+            };
+            for (var c = 1; c <= opts.numberOfMonths; c++) {
+                html += '<div class="pika-lendar">' + renderTitle(this, c, calendar.year, calendar.month) + this.render(calendar.year, calendar.month) + '</div>';
+                calendar.month++;
+                calendar = adjustCalendar(calendar);
+            }
+            
+            this.el.innerHTML = html;
 
             if (opts.bound) {
                 var pEl  = opts.field,
@@ -779,7 +819,7 @@
                     isToday = compareDates(day, now),
                     isEmpty = i < before || i >= (days + before);
 
-                row.push(renderDay(1 + (i - before), isSelected, isToday, isDisabled, isEmpty));
+                row.push(renderDay(1 + (i - before), month, year, isSelected, isToday, isDisabled, isEmpty));
 
                 if (++r === 7) {
                     data.push(renderRow(row, opts.isRTL));

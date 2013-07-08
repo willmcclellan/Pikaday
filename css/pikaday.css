@@ -9,13 +9,13 @@
     z-index: 9999;
     display: block;
     position: relative;
-    width: 240px;
     padding: 8px;
     color: #333;
     background: #fff;
     border: 1px solid #ccc;
     border-bottom-color: #bbb;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow: hidden; /* clear child float (pika-lendar), if this bring issue, use another clearfix method */
 }
 
 .pika-single.is-hidden {
@@ -25,6 +25,11 @@
 .pika-single.is-bound {
     position: absolute;
     box-shadow: 0 5px 15px -5px rgba(0,0,0,.5);
+}
+
+.pika-lendar {
+    float: left;
+    width: 240px;
 }
 
 .pika-title {
