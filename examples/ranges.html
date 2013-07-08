@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+    <title>Pikaday - ranges example</title>
+    <meta name="author" content="Ramiro Rikkert">
+    <link rel="stylesheet" href="../css/pikaday.css">
+    <link rel="stylesheet" href="../css/site.css">
+</head>
+<body>
+    <a href="https://github.com/dbushell/Pikaday"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+
+    <h1>Pikaday</h1>
+
+    <p class="large">A refreshing JavaScript Datepicker — lightweight, no dependencies, modular CSS.</p>
+    
+    <div id="observeComparePickers"></div>
+
+    <p>Using 4 pikaday instances & some clever computations, you can get the illusion of one awesome datepicker that support dates ranges with constraints.</p>
+
+    <h2>What is this?</h2>
+
+    <p>This is a development preview! Feel free to use it however you like but please report any bugs or feature requests to <a href="http://twitter.com/dbushell/">@dbushell</a> (on the GitHub issue tracker), thanks!</p>
+
+    <p class="small">Copyright © 2013 <a href="http://dbushell.com/">David Bushell</a> | BSD &amp; MIT license | Example by <a href="https://github.com/rikkert">Ramiro Rikkert</a></p>
+
+    <script src="../pikaday.js"></script>
+    <style>
+        .pika-DateRange {}
+        
+            .pika-DateRange-selection {
+                background: #ffb366;
+                border-radius: 3px;
+            }
+            
+            .pika-DateRange-range {}
+            
+            /* radius for the range */
+            /*:not(.pika-DateRange) + .pika-DateRange,*/
+            .pika-DateRange-range--first,
+            :first-child.pika-DateRange-range
+            { border-radius: 3px 0 0 3px; }
+            
+            /* E! + F (previous sibling) selector is CSS 4, so not ready everywhere (nowhere actually) */
+            /*.pika-DateRange! + :not(.pika-DateRange),*/
+            .pika-DateRange-range--last,
+            :last-child.pika-DateRange-range
+            { border-radius: 0 3px 3px 0; }
+            
+            .pika-DateRange-range--first.pika-DateRange-range--last { border-radius: 3px; }
+            
+                .pika-DateRange .pika-button {
+                    color: #fff;
+                    background: transparent;
+                }
+                
+                .pika-DateRange-range--observe { background: #66bfff; }
+                .pika-DateRange-range--compare { background: #99d4ff; }
+                .pika-DateRange-range--observe.pika-DateRange-range--compare { background: #0095ff; }
+    </style>
+    <script>
+    
+    var updateConstraints = function() {
+        observePicker[1].setMinDate(observePicker[0].getDate());
+        comparePicker[0].setMaxDate(observePicker[1].getDate());
+        comparePicker[1].setMinDate(comparePicker[0].getDate());
+        comparePicker[1].setMaxDate(observePicker[1].getDate());
+        
+        // sync calendars positions
+        pickers.forEach(function(picker) {
+            picker.firstCalendar = firstCalendar;
+        });
+    };
+    
+    var enhanceDatepickerWithVisibleRanges = function() {
+        // just add some class to datepicker buttons to draw ranges
+        pickers.forEach(function(picker) {
+            var days = picker.el.getElementsByClassName('pika-day');
+            var selectedDates = [
+                +observePicker[0].getDate(),
+                +observePicker[1].getDate(),
+                +comparePicker[0].getDate(),
+                +comparePicker[1].getDate()
+            ];
+            for (var d = 0; d < days.length; d++) {
+                var date = new Date(days[d].getAttribute('data-pika-year') + '-' + (parseInt(days[d].getAttribute('data-pika-month'), 10)+1) + '-' + days[d].getAttribute('data-pika-day'));
+                if (selectedDates.indexOf(+date) !== -1 ) {
+                    days[d].parentNode.classList.add('pika-DateRange');
+                    days[d].parentNode.classList.add('pika-DateRange-selection');
+                }
+            }
+            if (observePicker[0].getDate() !== null && observePicker[1].getDate() !== null) {
+                addDateRangeClasses(days, observePicker[0].getDate(), observePicker[1].getDate(), 'observe');
+            }
+            if (comparePicker[0].getDate() !== null && comparePicker[1].getDate() !== null) {
+                addDateRangeClasses(days, comparePicker[0].getDate(), comparePicker[1].getDate(), 'compare');
+            }
+        })
+    };
+    
+    var addDateRangeClasses = function(days, start, end, classModifier) {
+        for (var d = 0; d < days.length; d++) {
+            var date = new Date(days[d].getAttribute('data-pika-year') + '-' + (parseInt(days[d].getAttribute('data-pika-month'), 10)+1) + '-' + days[d].getAttribute('data-pika-day'));
+            if (+date >= +start && +date <= +end) {
+                days[d].parentNode.classList.add('pika-DateRange');
+                days[d].parentNode.classList.add('pika-DateRange-range');
+                days[d].parentNode.classList.add('pika-DateRange-range--' + classModifier);
+                
+                if (+date === +start) {
+                    days[d].parentNode.classList.add('pika-DateRange-range--first');
+                }
+                // to handle CSS "E! + F" selector
+                if (+date === +end) {
+                    days[d].parentNode.classList.add('pika-DateRange-range--last');
+                }
+            }
+        }
+    }
+    var firstCalendar;
+    var maxDate = new Date();
+    var observePicker = [new Pikaday(
+    {
+        calendars: 2,
+        firstDay: 1,
+        maxDate: maxDate,
+        onDraw: enhanceDatepickerWithVisibleRanges,
+        onSelect: function() {            
+            observePicker[1].setDate(null);
+            firstCalendar = this.firstCalendar;
+            updateConstraints();
+            
+            observePicker[0].el.style.display = 'none';
+            observePicker[1].draw().el.style.display = 'block';
+            
+            enhanceDatepickerWithVisibleRanges();
+        }
+    }),
+    new Pikaday(
+    {
+        calendars: 2,
+        firstDay: 1,
+        maxDate: maxDate,
+        onDraw: enhanceDatepickerWithVisibleRanges,
+        onSelect: function() {
+            updateConstraints();
+            
+            observePicker[1].el.style.display = 'none';
+            comparePicker[0].draw().el.style.display = 'block';
+            
+            enhanceDatepickerWithVisibleRanges();
+        }
+    })];
+    
+    var comparePicker = [new Pikaday(
+    {
+        calendars: 2,
+        firstDay: 1,
+        maxDate: maxDate,
+        onDraw: enhanceDatepickerWithVisibleRanges,
+        onSelect: function() {
+            comparePicker[1].setDate(null);
+            
+            updateConstraints();
+            
+            comparePicker[0].el.style.display = 'none';
+            comparePicker[1].draw().el.style.display = 'block';
+            
+            enhanceDatepickerWithVisibleRanges();
+        }
+    }),
+    new Pikaday(
+    {
+        calendars: 2,
+        firstDay: 1,
+        maxDate: maxDate,
+        onDraw: enhanceDatepickerWithVisibleRanges,
+        onSelect: function() {
+            updateConstraints();
+            
+            comparePicker[1].el.style.display = 'none';
+            observePicker[0].draw().el.style.display = 'block';
+            
+            enhanceDatepickerWithVisibleRanges();
+        }
+    })];
+    
+    var pickers = [
+        observePicker[0],
+        observePicker[1],
+        comparePicker[0],
+        comparePicker[1]
+    ]
+    
+    observePicker[1].el.style.display="none";
+    comparePicker[0].el.style.display="none";
+    comparePicker[1].el.style.display="none";
+    
+    var el_pickers = document.getElementById('observeComparePickers');
+    el_pickers.appendChild(observePicker[0].el);
+    el_pickers.appendChild(observePicker[1].el);
+    el_pickers.appendChild(comparePicker[0].el);
+    el_pickers.appendChild(comparePicker[1].el);
+    
+    </script>
+</body>
+</html>
