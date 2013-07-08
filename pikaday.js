@@ -596,6 +596,8 @@
             if (hasMoment && moment.isMoment(date)) {
                 this.setDate(date.toDate());
             }
+            
+            return this;
         },
 
         /**
@@ -642,6 +644,8 @@
             if (!preventOnSelect && typeof this._o.onSelect === 'function') {
                 this._o.onSelect.call(this, this.getDate());
             }
+            
+            return this;
         },
 
         /**
@@ -655,11 +659,15 @@
             this._y = date.getFullYear();
             this._m = date.getMonth();
             this.draw();
+            
+            return this;
         },
 
         gotoToday: function()
         {
             this.gotoDate(new Date());
+            
+            return this;
         },
 
         /**
@@ -671,6 +679,8 @@
                 this._m = month < 0 ? 0 : month > 11 ? 11 : month;
                 this.draw();
             }
+            
+            return this;
         },
 
         nextMonth: function()
@@ -687,6 +697,8 @@
             this.firstCalendar.month--;
             this.firstCalendar = adjustCalendar(this.firstCalendar);
             this.draw();
+            
+            return this;
         },
 
         /**
@@ -698,6 +710,8 @@
                 this._y = parseInt(year, 10);
                 this.draw();
             }
+            
+            return this;
         },
 
         /**
@@ -706,6 +720,8 @@
         setMinDate: function(value)
         {
             this._o.minDate = value;
+            
+            return this;
         },
 
         /**
@@ -714,6 +730,8 @@
         setMaxDate: function(value)
         {
             this._o.maxDate = value;
+            
+            return this;
         },
 
         /**
@@ -788,6 +806,8 @@
                     self._o.onDraw.call(self);
                 }, 0);
             }
+            
+            return this;
         },
 
         /**
@@ -851,6 +871,8 @@
                     this._o.onOpen.call(this);
                 }
             }
+            
+            return this;
         },
 
         hide: function()
@@ -867,6 +889,8 @@
                     this._o.onClose.call(this);
                 }
             }
+            
+            return this;
         },
 
         /**
