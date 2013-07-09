@@ -773,10 +773,10 @@
             
             // default position is bottom & left
 
-            if (left + width > viewportWidth || this._o.position.indexOf('top') > -1) {
+            if (left + width > viewportWidth || this._o.position.indexOf('right') > -1) {
                 left = left - width + pEl.offsetWidth;
             }
-            if (top + height > viewportHeight + scrollTop || this._o.position.indexOf('right') > -1) {
+            if (top + height > viewportHeight + scrollTop || this._o.position.indexOf('top') > -1) {
                 top = top - height - pEl.offsetHeight;
             }
             this.el.style.cssText = [
