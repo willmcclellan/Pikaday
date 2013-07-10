@@ -750,8 +750,10 @@
 
         adjustPosition: function()
         {
-            var pEl = this._o.trigger,
-            width = this.el.offsetWidth, height = this.el.offsetHeight,
+            var field = this._o.trigger,
+            pEl = field,
+            width = this.el.offsetWidth,
+            height = this.el.offsetHeight,
             viewportWidth = window.innerWidth || document.documentElement.clientWidth,
             viewportHeight = window.innerHeight || document.documentElement.clientHeight,
             scrollTop = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop,
@@ -774,11 +776,12 @@
             // default position is bottom & left
 
             if (left + width > viewportWidth || this._o.position.indexOf('right') > -1) {
-                left = left - width + pEl.offsetWidth;
+                left = left - width + field.offsetWidth;
             }
             if (top + height > viewportHeight + scrollTop || this._o.position.indexOf('top') > -1) {
-                top = top - height - pEl.offsetHeight;
+                top = top - height - field.offsetHeight;
             }
+            
             this.el.style.cssText = [
                 'position: absolute',
                 'left: ' + left + 'px',
